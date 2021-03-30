@@ -38,6 +38,10 @@ const processItem = async (item: AirtableItem): Promise<void> => {
         console.log(`Triggering Netlify build for: ${item.Headline}`);
         await triggerNetlify();
         break;
+      case 'YouTube':
+        console.log(`Triggering Netlify build for: ${item.Headline}`);
+        await triggerNetlify();
+        break;
     }
 
     await markAsPublished(item);
@@ -54,17 +58,3 @@ const processItem = async (item: AirtableItem): Promise<void> => {
 }
 
 export default timerTrigger;
-
-/**
- * Using Markdown to create blog posts & documentation is great, but how do I remember everything!?
- *
- * The Markdownlint extension for @code makes it easy to lint markdown and make sure I'm writing valid Markdown.
- *
- * https://youtu.be/NfgYfqQBc_8
- *
- *
- *
- *
- *
- *
- */
