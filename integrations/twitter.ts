@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import axios from 'axios';
 import * as Twitter from 'twit';
+import { Context } from '@azure/functions';
 
 import { AirtableImage, AirtableItem } from '../models/airtableItem';
 import { Tweet } from '../models/tweet';
@@ -26,7 +27,7 @@ const excludeImageTypes = [
 /**
  * Send tweet about the item
  */
-export const tweet = async (item: AirtableItem): Promise<void> => {
+export const tweet = async (item: AirtableItem, _context: Context): Promise<void> => {
   try {
     if (item.Tweet) {
 
@@ -40,10 +41,12 @@ export const tweet = async (item: AirtableItem): Promise<void> => {
         }
       }
       await twitter.post('statuses/update', status);
+
+      _context.log(`Send tweet promoting ${item.Headline}`);
     }
   }
   catch (err) {
-    console.error(err);
+    _context.log(`Error tweeting ${item.Headline}: ${err}`);
   }
 }
 

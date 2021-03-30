@@ -13,6 +13,7 @@ export class AirtableItem {
     public PublishDate: Date,
     public PromotionReady: boolean,
     public PromotionDate: Date,
+    public PromotionComplete: boolean = false,
     public Image?: AirtableImage[],
     public Tweet?: string,
     public ImageAltText?: string

@@ -1,3 +1,4 @@
+import { Context } from '@azure/functions';
 import axios from 'axios';
 import { AirtableItem } from '../models/airtableItem';
 
@@ -12,7 +13,7 @@ const airtableHeaders = {
  * Retrieves any records in Airtable that are flagged as "Staged"
  * @returns An array of records from Airtable
  */
-export const getItemsToPublish = async (): Promise<AirtableItem[]> => {
+export const getItemsToPublish = async (_context: Context): Promise<AirtableItem[]> => {
 
   const fields = [
     'fields%5B%5D=Headline',
@@ -23,7 +24,8 @@ export const getItemsToPublish = async (): Promise<AirtableItem[]> => {
     'fields%5B%5D=Status',
     'fields%5B%5D=PromotionReady',
     'fields%5B%5D=PromotionDate',
-    'fields%5B%5D=ImageAltText'
+    'fields%5B%5D=ImageAltText',
+    'fields%5B%5D=PromotionComplete'
   ]
 
   const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_NAME}/Content%20Production?view=Staged+Content&${fields.join('&')}`
@@ -40,12 +42,13 @@ export const getItemsToPublish = async (): Promise<AirtableItem[]> => {
       r.fields.PublishDate,
       r.fields.PromotionReady || false,
       r.fields.PromotionDate,
+      r.fields.PromotionComplete,
       r.fields.Image,
       r.fields.Tweet,
       r.fields.ImageAltText));
   }
   catch (err) {
-    console.error(err);
+    _context.log(err);
   }
 
   return [];
@@ -54,7 +57,9 @@ export const getItemsToPublish = async (): Promise<AirtableItem[]> => {
 /** 
  * Updates the item in Airtable as published.
 */
-export const markAsPublished = async (item: AirtableItem): Promise<void> => {
+export const markAsPublished = async (item: AirtableItem, _context: Context): Promise<void> => {
+
+  _context.log(`Marking ${item.Headline} as published`);
 
   const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_NAME}/Content%20Production/${item.id}`
 
@@ -68,14 +73,16 @@ export const markAsPublished = async (item: AirtableItem): Promise<void> => {
     });
   }
   catch (err) {
-    console.error(err);
+    _context.log(err);
   }
 }
 
 /** 
  * Updates the item in Airtable as promoted.
 */
-export const markAsPromoted = async (item: AirtableItem): Promise<void> => {
+export const markAsPromoted = async (item: AirtableItem, _context: Context): Promise<void> => {
+
+  _context.log(`Marking ${item.Headline} as promoted`);
 
   const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_NAME}/Content%20Production/${item.id}`
 
@@ -90,6 +97,29 @@ export const markAsPromoted = async (item: AirtableItem): Promise<void> => {
     });
   }
   catch (err) {
-    console.error(err);
+    _context.log(err);
+  }
+}
+
+/** 
+ * Updates the item in Airtable as promoted.
+*/
+export const markAsDone = async (item: AirtableItem, _context: Context): Promise<void> => {
+
+  _context.log(`Marking ${item.Headline} as done`);
+
+  const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_NAME}/Content%20Production/${item.id}`
+
+  try {
+    await axios.patch(airtableUrl, {
+      fields: {
+        Status: "Done"
+      }
+    }, {
+      headers: airtableHeaders
+    });
+  }
+  catch (err) {
+    _context.log(err);
   }
 }
